@@ -1,0 +1,170 @@
+/* Sidebar Nav 追加样式 */
+.sidebar-footer {
+    margin-top: auto;
+    padding: 24px;
+    border-top: 1px solid var(--border-light);
+    font-size: 12px;
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--primary);
+    border-radius: 50%;
+    box-shadow: var(--glow-primary);
+    animation: pulseGlow 2s infinite;
+}
+
+/* 页面通用标题与徽章 */
+.section-title {
+    margin-bottom: 24px;
+    color: #fff;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.badge {
+    font-size: 11px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+    border: 1px solid;
+    vertical-align: middle;
+}
+
+.badge-primary {
+    color: var(--primary);
+    border-color: var(--primary);
+    background: rgba(0, 240, 255, 0.1);
+}
+
+.badge-secondary {
+    color: var(--secondary);
+    border-color: var(--secondary);
+    background: rgba(112, 0, 255, 0.1);
+}
+
+/* 布局辅助 */
+.w-full {
+    width: 100%;
+    max-width: 100%;
+}
+
+.h-full {
+    height: 100%;
+}
+
+.flex-col {
+    display: flex;
+    flex-direction: column;
+}
+
+/* 搜索栏 (Library 视图) */
+.search-bar {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--border-light);
+    padding: 8px 8px 8px 16px;
+    border-radius: 12px;
+    align-items: center;
+}
+
+.search-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #fff;
+    outline: none;
+    font-size: 15px;
+}
+
+.resume-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.resume-list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 16px 20px;
+    border-radius: 12px;
+    transition: 0.3s;
+}
+
+.resume-list-item:hover {
+    border-color: var(--border-light);
+    transform: translateX(4px);
+}
+
+.resume-meta h4 {
+    color: #fff;
+    margin-bottom: 6px;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+}
+
+.resume-meta p {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+/* JD 匹配分屏 (Matching 视图) */
+.textarea-glass {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 16px;
+    color: #fff;
+    outline: none;
+    resize: none;
+    font-size: 14px;
+    line-height: 1.6;
+    transition: 0.3s;
+}
+
+.textarea-glass:focus {
+    border-color: var(--border-light);
+}
+
+.match-item {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 16px;
+    border-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.match-score {
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--primary);
+    text-shadow: var(--glow-primary);
+}
+
+/* 进度条 (Monitor 视图) */
+.confidence-bar {
+    background: #2a2a4a;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.confidence-fill {
+    height: 100%;
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+}

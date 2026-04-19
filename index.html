@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Nexus Vision | JSON Resume Standard Core</title>
+    <script src="https://cdn.staticfile.net/vue/3.3.4/vue.global.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="./css/variables.css">
+    <link rel="stylesheet" href="./css/animations.css">
+    <link rel="stylesheet" href="./css/layout.css">
+    <link rel="stylesheet" href="./css/components.css">
+    <link rel="stylesheet" href="./css/views.css">
+
+    <style>
+        /* 针对最新要求的局部样式微调：确保在浅色背景下文字清晰 */
+        .section-title {
+            color: var(--text-main) !important;
+        }
+
+        .info-card {
+            background: rgba(255, 255, 255, 0.7) !important;
+            border: 1px solid rgba(255, 255, 255, 0.8) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+        }
+
+        .edit-input {
+            color: var(--text-main) !important;
+            border-bottom: 1px solid #ddd !important;
+        }
+
+        .edit-input:focus {
+            border-bottom: 1px solid var(--primary) !important;
+        }
+
+        .textarea-glass {
+            background: rgba(255, 255, 255, 0.6) !important;
+            color: var(--text-main) !important;
+            border: 1px solid #eee !important;
+        }
+
+        .match-item {
+            background: rgba(255, 255, 255, 0.6) !important;
+            border: 1px solid #eee !important;
+        }
+
+        .match-item h4 {
+            color: var(--text-main) !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <aside class="sidebar">
+            <div class="brand">
+                <h1>NEXUS_CORE</h1>
+                <p style="color: var(--primary);">v3.5.0 // JSON RESUME STD</p>
+            </div>
+            <nav class="nav-menu">
+                <div class="nav-item" :class="{ active: currentView === 'workspace' }"
+                    @click="currentView = 'workspace'">
+                    <i class="ri-fingerprint-line"></i> DeepSeek 萃取舱
+                </div>
+                <div class="nav-item" :class="{ active: currentView === 'library' }" @click="currentView = 'library'">
+                    <i class="ri-database-2-line"></i> FAISS 向量检索
+                </div>
+                <div class="nav-item" :class="{ active: currentView === 'matching' }" @click="currentView = 'matching'">
+                    <i class="ri-brain-line"></i> JD 智能匹配
+                </div>
+                <div class="nav-item" :class="{ active: currentView === 'monitor' }" @click="currentView = 'monitor'">
+                    <i class="ri-dashboard-3-line"></i> 算力监控
+                </div>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="status-dot"></div>
+                <span>Engine Online</span>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <transition name="fade" mode="out-in">
+
+                <div v-if="currentView === 'workspace'" key="workspace">
+                    <h2 class="section-title">档案解析节点 <span class="badge badge-primary">DeepSeek-OCR v2</span></h2>
+
+                    <div class="glass-panel" style="max-width: 950px;">
+                        <div v-if="!resumeData && !isLoading">
+                            <div class="upload-zone" @click="$refs.fileInput.click()">
+                                <input type="file" ref="fileInput" style="display: none;" @change="handleFileSelect">
+                                <i class="ri-upload-cloud-2-line" style="font-size: 48px; color: var(--primary);"></i>
+                                <h3 style="margin: 16px 0 8px; color: var(--text-main);">接入目标数据流</h3>
+                                <p style="color: var(--text-muted); font-size: 13px;">{{ selectedFile ?
+                                    selectedFile.name : '支持标准 JSON Resume 格式提取' }}</p>
+                            </div>
+                            <button class="btn-primary" style="width: 100%;" @click="executeAnalysis"
+                                :disabled="!selectedFile">初始化特征提取</button>
+                            <p v-if="errorMessage" style="color: #ff4757; margin-top: 12px; text-align: center;">{{
+                                errorMessage }}</p>
+                        </div>
+
+                        <div v-if="isLoading" style="text-align: center; padding: 60px 0;">
+                            <i class="ri-radar-line ri-spin" style="font-size: 56px; color: var(--primary);"></i>
+                            <h3 style="margin-top: 24px; color: var(--text-main); letter-spacing: 2px;">{{ loadingMsg }}
+                            </h3>
+                        </div>
+
+                        <div v-if="resumeData && !isLoading">
+                            <div
+                                style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-light); padding-bottom: 16px; margin-bottom: 24px;">
+                                <div style="display: flex; gap: 8px;">
+                                    <button :class="viewMode === 'visual' ? 'btn-primary' : 'btn-outline'"
+                                        @click="viewMode = 'visual'">GUI 视图</button>
+                                    <button :class="viewMode === 'json' ? 'btn-primary' : 'btn-outline'"
+                                        @click="viewMode = 'json'">{ JSON 源码 }</button>
+                                </div>
+                                <div style="display: flex; gap: 8px;">
+                                    <button class="btn-outline"
+                                        @click="resumeData = null; selectedFile = null">重置</button>
+                                    <button class="btn-primary" @click="confirmSave">写入向量库</button>
+                                </div>
+                            </div>
+
+                            <div v-if="viewMode === 'visual'" class="bento-grid">
+                                <div class="info-card" style="grid-column: span 2;">
+                                    <div
+                                        style="color: var(--primary); font-size: 11px; font-weight: bold; margin-bottom: 15px; letter-spacing: 1px;">
+                                        IDENTITY / 基础特征</div>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
+                                        <div>
+                                            <label style="font-size: 10px; color: var(--text-muted);">NAME</label>
+                                            <input type="text" v-model="resumeData.basics.name" class="edit-input">
+                                        </div>
+                                        <div>
+                                            <label style="font-size: 10px; color: var(--text-muted);">ROLE</label>
+                                            <input type="text" v-model="resumeData.basics.label" class="edit-input">
+                                        </div>
+                                        <div>
+                                            <label style="font-size: 10px; color: var(--text-muted);">EMAIL</label>
+                                            <input type="text" v-model="resumeData.basics.email" class="edit-input">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="info-card" style="grid-column: span 2;">
+                                    <div
+                                        style="color: var(--primary); font-size: 11px; font-weight: bold; margin-bottom: 15px;">
+                                        EXPERIENCE / 职业轨迹</div>
+                                    <div v-for="(job, idx) in resumeData.work" :key="idx"
+                                        style="margin-bottom: 15px; border-left: 2px solid var(--primary); padding-left: 15px;">
+                                        <div style="display: flex; gap: 10px;">
+                                            <input type="text" v-model="job.name" class="edit-input"
+                                                style="flex: 2; font-weight: bold;" placeholder="公司">
+                                            <input type="text" v-model="job.position" class="edit-input"
+                                                style="flex: 2;" placeholder="职位">
+                                            <input type="text" v-model="job.startDate" class="edit-input"
+                                                style="flex: 1; font-size: 12px;">
+                                        </div>
+                                        <input type="text" v-model="job.summary" class="edit-input"
+                                            style="font-size: 13px; color: var(--text-muted); width: 100%; margin-top: 5px;"
+                                            placeholder="职责描述">
+                                    </div>
+                                </div>
+
+                                <div class="info-card">
+                                    <div
+                                        style="color: var(--primary); font-size: 11px; font-weight: bold; margin-bottom: 15px;">
+                                        EDUCATION / 教育网络</div>
+                                    <div v-for="(edu, idx) in resumeData.education" :key="idx"
+                                        style="margin-bottom: 10px;">
+                                        <input type="text" v-model="edu.institution" class="edit-input"
+                                            style="font-weight: bold;" placeholder="院校">
+                                        <div style="display: flex; gap: 5px; margin-top: 4px;">
+                                            <input type="text" v-model="edu.area" class="edit-input"
+                                                style="font-size: 12px;" placeholder="专业">
+                                            <input type="text" v-model="edu.studyType" class="edit-input"
+                                                style="font-size: 12px; width: 60px;" placeholder="学历">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="info-card">
+                                    <div
+                                        style="color: var(--primary); font-size: 11px; font-weight: bold; margin-bottom: 15px;">
+                                        SKILLS / 技能矩阵</div>
+                                    <div v-for="(skill, idx) in resumeData.skills" :key="idx"
+                                        style="margin-bottom: 10px;">
+                                        <div style="font-size: 12px; color: var(--secondary); margin-bottom: 6px;">{{
+                                            skill.name }}</div>
+                                        <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                                            <span class="skill-tag" v-for="kw in skill.keywords" :key="kw">{{ kw
+                                                }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div v-if="viewMode === 'json'"
+                                style="background: #0d1117; padding: 20px; border-radius: 8px; color: #c9d1d9; max-height: 500px; overflow-y: auto;">
+                                <pre
+                                    style="font-family: 'Fira Code', monospace; font-size: 13px;"><code>{{ formatJSON(resumeData) }}</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-if="currentView === 'library'" key="library">
+                    <h2 class="section-title">人才特征检索库 <span class="badge badge-secondary">FAISS Cluster</span></h2>
+                    <div class="glass-panel w-full">
+                        <div class="search-bar">
+                            <i class="ri-search-line" style="color: var(--primary); font-size: 20px;"></i>
+                            <input type="text" v-model="searchKeyword" class="search-input"
+                                placeholder="输入语义特征词进行召回扫描..." @keyup.enter="executeSearch">
+                            <button class="btn-primary" @click="executeSearch">执行召回</button>
+                        </div>
+
+                        <div class="resume-list" v-if="searchResults.length > 0">
+                            <div class="resume-list-item" v-for="(item, index) in searchResults" :key="index">
+                                <div class="resume-meta">
+                                    <h4>{{ item.basics?.name || '未命名' }} <span class="skill-tag"
+                                            style="margin-left: 10px;">{{ item.basics?.label }}</span></h4>
+                                    <p>{{ item.education?.[0]?.institution }} | {{ item.work?.[0]?.name }} · {{
+                                        item.work?.[0]?.position }}</p>
+                                </div>
+                                <div class="match-score">{{ Math.floor(Math.random() * 20 + 75) }}%</div>
+                            </div>
+                        </div>
+                        <div v-else style="text-align: center; padding: 60px; color: var(--text-muted);">
+                            <i class="ri-radar-line"
+                                style="font-size: 48px; opacity: 0.2; margin-bottom: 15px; display: block;"></i>
+                            <p>等待接入特征向量进行语义匹配...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-if="currentView === 'matching'" key="matching" class="h-full">
+                    <h2 class="section-title">JD 智能匹配推理 <span class="badge badge-primary">Qwen Agent</span></h2>
+                    <div class="split-layout">
+                        <div class="split-pane">
+                            <div class="glass-panel h-full flex-col">
+                                <h3 style="margin-bottom: 16px; font-size: 15px; color: var(--text-main);">目标岗位描述 (JD)
+                                </h3>
+                                <textarea class="textarea-glass flex-1" placeholder="在此输入职位需求详情..."></textarea>
+                                <button class="btn-primary" style="margin-top: 16px;">启动逻辑推理排序</button>
+                            </div>
+                        </div>
+                        <div class="split-pane">
+                            <div class="glass-panel h-full flex-col" style="overflow-y: auto;">
+                                <h3 style="margin-bottom: 16px; font-size: 15px; color: var(--text-main);">AI 精排候选人</h3>
+                                <div class="match-item">
+                                    <div>
+                                        <h4>John Doe <span class="skill-tag">推荐</span></h4>
+                                        <p style="font-size: 12px; color: var(--text-muted);">技能栈 100% 覆盖岗位要求</p>
+                                    </div>
+                                    <div class="match-score">96%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-if="currentView === 'monitor'" key="monitor">
+                    <h2 class="section-title">系统状态监控 <span class="badge badge-secondary">V100 CLUSTER</span></h2>
+                    <div class="bento-grid">
+                        <div class="glass-panel" style="padding: 24px;">
+                            <div style="color: var(--text-muted); font-size: 12px; margin-bottom: 15px;">GPU-0 显存分配
+                                (DeepSeek-OCR)</div>
+                            <div class="confidence-bar" style="height: 10px;">
+                                <div class="confidence-fill" style="width: 85%; background: #ff4757;"></div>
+                            </div>
+                            <div
+                                style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 12px;">
+                                <span>13.6GB / 16GB</span><span style="color: #ff4757;">BUSY</span></div>
+                        </div>
+                        <div class="glass-panel" style="padding: 24px;">
+                            <div style="color: var(--text-muted); font-size: 12px; margin-bottom: 15px;">GPU-1 显存分配
+                                (Qwen-14B)</div>
+                            <div class="confidence-bar" style="height: 10px;">
+                                <div class="confidence-fill" style="width: 40%; background: var(--primary);"></div>
+                            </div>
+                            <div
+                                style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 12px;">
+                                <span>6.4GB / 16GB</span><span style="color: var(--primary);">IDLE</span></div>
+                        </div>
+                    </div>
+                </div>
+
+            </transition>
+        </main>
+    </div>
+
+    <script type="module" src="./js/app.js"></script>
+</body>
+
+</html>

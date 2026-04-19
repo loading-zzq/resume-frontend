@@ -1,0 +1,40 @@
+@keyframes scanline {
+    100% {
+        left: 200%;
+    }
+}
+
+@keyframes pulseGlow {
+    0% {
+        box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+    }
+
+    50% {
+        box-shadow: 0 0 25px rgba(0, 240, 255, 0.6);
+    }
+
+    100% {
+        box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+    }
+}
+
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+    transform: translateY(15px) scale(0.98);
+}
+
+.ri-spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    100% {
+        transform: rotate(360deg);
+    }
+}
